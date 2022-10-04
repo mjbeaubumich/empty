@@ -5,10 +5,12 @@ from twilio.rest import Client
 import numpy as np
 from pygame import mixer
 import time
+import sys
 
 
 mixer.init()
 sound = mixer.Sound('alarm.wav')
+car = mixer.Sound('car.wav')
 root_path = os.getcwd()
 face = cv2.CascadeClassifier(os.path.join(root_path,'haar cascade files', 'haarcascade_frontalface_alt.xml'))
 leye = cv2.CascadeClassifier(os.path.join(root_path, 'haar cascade files', 'haarcascade_lefteye_2splits.xml'))
@@ -29,6 +31,12 @@ thicc=2
 rpred=[99]
 lpred=[99]
 
+sys.stdout.flush()
+print("Welcome. Push to start car.")
+input()
+car.play()
+
+sound_played = False
 while(True):
     ret, frame = cap.read()
     height,width = frame.shape[:2] 
@@ -84,16 +92,18 @@ while(True):
     
         
     if(score<0):
-        score=0   
+        score=0
     cv2.putText(frame,'Score:'+str(score),(100,height-20), font, 1,(255,255,255),1,cv2.LINE_AA)
+    if(score < 15 and sound_played):
+        sound_played = False
     if(score>15):
         #person is feeling sleepy so we beep the alarm
-        if asleep_prev_loop == False:
-            client.messages.create(to='+17347907349', from_='+18782177085', body='LookOut: EC has fallen asleep, landing.')
         cv2.imwrite(os.path.join(path,'image.jpg'),frame)
         try:
-            sound.play()
-            
+            if (not sound_played):
+                sound.play()
+                sound_played = True
+
         except:  # isplaying = False
             pass
         if(thicc<16):
@@ -103,9 +113,16 @@ while(True):
             if(thicc<2):
                 thicc=2
         cv2.rectangle(frame,(0,0),(width,height),(0,0,255),thicc)
-        asleep_prev_loop = True
-    else:
+    if (score > 30):
+        if (not asleep_prev_loop):
+            asleep_prev_loop = True
+            client.messages.create(to='+17347907349', from_='+18782177085', body='Your son Frankie has fallen asleep.\n\nSafe landing the vehicle.')
+        cv2.putText(frame,'INITIATING SAFE LAND NOW. TEXTING YOUR MOM',(100,height-100), font, 1,(0,0,255),1,cv2.LINE_AA)
+    if (score < 15 and asleep_prev_loop):
         asleep_prev_loop = False
+        #asleep_prev_loop = True
+    #else:  
+        #asleep_prev_loop = False
     cv2.imshow('frame',frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
