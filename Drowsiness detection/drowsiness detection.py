@@ -1,6 +1,7 @@
 import cv2
 import os
 from keras.models import load_model
+from twilio.rest import Client
 import numpy as np
 from pygame import mixer
 import time
@@ -8,18 +9,19 @@ import time
 
 mixer.init()
 sound = mixer.Sound('alarm.wav')
+root_path = os.getcwd()
+face = cv2.CascadeClassifier(os.path.join(root_path,'haar cascade files', 'haarcascade_frontalface_alt.xml'))
+leye = cv2.CascadeClassifier(os.path.join(root_path, 'haar cascade files', 'haarcascade_lefteye_2splits.xml'))
+reye = cv2.CascadeClassifier(os.path.join(root_path, 'haar cascade files', 'haarcascade_righteye_2splits.xml'))
 
-face = cv2.CascadeClassifier('haar cascade files\haarcascade_frontalface_alt.xml')
-leye = cv2.CascadeClassifier('haar cascade files\haarcascade_lefteye_2splits.xml')
-reye = cv2.CascadeClassifier('haar cascade files\haarcascade_righteye_2splits.xml')
-
-
+client = Client('ACc6fc575fedbb1b800b0833ce15ba456e', 'e5d4993b619e569b8904cceef6994602')
 
 lbl=['Close','Open']
 
 model = load_model('models/cnncat2.h5')
 path = os.getcwd()
 cap = cv2.VideoCapture(0)
+asleep_prev_loop = False
 font = cv2.FONT_HERSHEY_COMPLEX_SMALL
 count=0
 score=0
@@ -86,6 +88,8 @@ while(True):
     cv2.putText(frame,'Score:'+str(score),(100,height-20), font, 1,(255,255,255),1,cv2.LINE_AA)
     if(score>15):
         #person is feeling sleepy so we beep the alarm
+        if asleep_prev_loop == False:
+            client.messages.create(to='+17347907349', from_='+18782177085', body='LookOut: EC has fallen asleep, landing.')
         cv2.imwrite(os.path.join(path,'image.jpg'),frame)
         try:
             sound.play()
@@ -98,7 +102,10 @@ while(True):
             thicc=thicc-2
             if(thicc<2):
                 thicc=2
-        cv2.rectangle(frame,(0,0),(width,height),(0,0,255),thicc) 
+        cv2.rectangle(frame,(0,0),(width,height),(0,0,255),thicc)
+        asleep_prev_loop = True
+    else:
+        asleep_prev_loop = False
     cv2.imshow('frame',frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
