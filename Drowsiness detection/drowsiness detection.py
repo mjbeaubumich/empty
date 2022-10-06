@@ -13,6 +13,7 @@ root_path = os.getcwd()
 face = cv2.CascadeClassifier(os.path.join(root_path,'haar cascade files', 'haarcascade_frontalface_alt.xml'))
 leye = cv2.CascadeClassifier(os.path.join(root_path, 'haar cascade files', 'haarcascade_lefteye_2splits.xml'))
 reye = cv2.CascadeClassifier(os.path.join(root_path, 'haar cascade files', 'haarcascade_righteye_2splits.xml'))
+profile = cv2.CascadeClassifier(os.path.join(root_path,'haar cascade files', 'haarcascade_profileface.xml'))
 
 client = Client('ACc6fc575fedbb1b800b0833ce15ba456e', 'e5d4993b619e569b8904cceef6994602')
 
@@ -36,13 +37,20 @@ while(True):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
     faces = face.detectMultiScale(gray,minNeighbors=5,scaleFactor=1.1,minSize=(25,25))
+    profiles = profile.detectMultiScale(gray,minNeighbors=5,scaleFactor=1.1,minSize=(25,25))
     left_eye = leye.detectMultiScale(gray)
     right_eye =  reye.detectMultiScale(gray)
 
     cv2.rectangle(frame, (0,height-50) , (200,height) , (0,0,0) , thickness=cv2.FILLED )
 
+    if (faces == () and profiles == ()):
+        cv2.putText(frame,"No Face Detected",(200,height-20), font, 1,(255,0,255),1,cv2.LINE_AA)
+
+    for (x,y,w,h) in profiles:
+        cv2.rectangle(frame, (x,y) , (x+w,y+h) , (100,0,0) , 1 )
     for (x,y,w,h) in faces:
         cv2.rectangle(frame, (x,y) , (x+w,y+h) , (100,100,100) , 1 )
+    
 
     for (x,y,w,h) in right_eye:
         r_eye=frame[y:y+h,x:x+w]
@@ -74,7 +82,7 @@ while(True):
             lbl='Closed'
         break
 
-    if(rpred[0]==0 and lpred[0]==0):
+    if(rpred[0]==0 and lpred[0]==0 or faces == ()):
         score=score+1
         cv2.putText(frame,"Closed",(10,height-20), font, 1,(255,255,255),1,cv2.LINE_AA)
     # if(rpred[0]==1 or lpred[0]==1):
