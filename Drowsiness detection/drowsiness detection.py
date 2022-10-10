@@ -53,6 +53,7 @@ while(True):
     for (x,y,w,h) in faces:
         cv2.rectangle(frame, (x,y) , (x+w,y+h) , (100,100,100) , 1 )
 
+    """
     if (right_eye == ()):
         print("There does not appear to be a right eye in this frame. ")
     else:
@@ -62,9 +63,10 @@ while(True):
         print("There does not appear to be a left eye in this frame. ")
     else:
         print("There appears to be a left eye in this frame. ")
+    """
 
     if (left_eye == () and right_eye == ()):
-        cv2.putText(frame, 'I DONT SEE ANY EYES: ' + str(no_eyes), (100, 100), font, 1, (0, 0, 255), 1,
+        cv2.putText(frame, 'I DONT SEE ANY EYES: ' + str(no_eyes), (50, 50), font, 1, (0, 0, 0), 1,
                     cv2.LINE_AA)
         cv2.imshow('frame', frame)
         no_eyes += 1
@@ -109,11 +111,9 @@ while(True):
     if(rpred[0]==0 and lpred[0]==0 and (left_eye != () or right_eye != ())):
         score=score+1
         cv2.putText(frame,"Closed",(10,height-20), font, 1,(255,255,255),1,cv2.LINE_AA)
-    # if(rpred[0]==1 or lpred[0]==1):
     else:
         score=score-1
         cv2.putText(frame,"Open",(10,height-20), font, 1,(255,255,255),1,cv2.LINE_AA)
-    
         
     if(score<0):
         score=0
@@ -121,15 +121,13 @@ while(True):
     if(score < 15 and sound_played):
         sound_played = False
     if(score>=15):
-        #person is feeling sleepy so we beep the alarm
-        cv2.imwrite(os.path.join(path,'image.jpg'),frame)
         try:
             if (not sound_played):
                 sound.play()
                 sound_played = True
-
-        except:  # isplaying = False
+        except:
             pass
+
         if(thicc<16):
             thicc= thicc+2
         else:
@@ -141,12 +139,10 @@ while(True):
         if (not asleep_prev_loop):
             asleep_prev_loop = True
             client.messages.create(to='+17347907349', from_='+18782177085', body='Your son Frankie has fallen asleep.\n\nSafe landing the vehicle.')
-        cv2.putText(frame,'INITIATING SAFE LAND NOW. \nTEXTING YOUR MOM',(0,height-100), font, 1,(0,0,255),1,cv2.LINE_AA)
+        cv2.putText(frame,'INITIATING SAFE LAND NOW. TEXTING YOUR MOM',(10,height-100), font, 1,(0,0,0),1,cv2.LINE_AA)
     if (score < 15 and asleep_prev_loop):
         asleep_prev_loop = False
-        #asleep_prev_loop = True
-    #else:  
-        #asleep_prev_loop = False
+
     cv2.imshow('frame',frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
