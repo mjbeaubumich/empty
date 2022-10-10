@@ -30,6 +30,7 @@ score=0
 thicc=2
 rpred=[99]
 lpred=[99]
+no_eyes = 0
 
 sys.stdout.flush()
 print("Welcome. Push to start car.")
@@ -51,6 +52,29 @@ while(True):
 
     for (x,y,w,h) in faces:
         cv2.rectangle(frame, (x,y) , (x+w,y+h) , (100,100,100) , 1 )
+
+    if (right_eye == ()):
+        print("There does not appear to be a right eye in this frame. ")
+    else:
+        print("There appears to be a right eye in this frame. ")
+
+    if (left_eye == ()):
+        print("There does not appear to be a left eye in this frame. ")
+    else:
+        print("There appears to be a left eye in this frame. ")
+
+    if (left_eye == () and right_eye == ()):
+        cv2.putText(frame, 'I DONT SEE ANY EYES: ' + str(no_eyes), (100, 100), font, 1, (0, 0, 255), 1,
+                    cv2.LINE_AA)
+        cv2.imshow('frame', frame)
+        no_eyes += 1
+        if (no_eyes > 45 and no_eyes < 90):
+            score = 20
+        elif(no_eyes >= 90):
+            score = 35
+
+    else:
+        no_eyes = 0
 
     for (x,y,w,h) in right_eye:
         r_eye=frame[y:y+h,x:x+w]
@@ -82,7 +106,7 @@ while(True):
             lbl='Closed'
         break
 
-    if(rpred[0]==0 and lpred[0]==0):
+    if(rpred[0]==0 and lpred[0]==0 and (left_eye != () or right_eye != ())):
         score=score+1
         cv2.putText(frame,"Closed",(10,height-20), font, 1,(255,255,255),1,cv2.LINE_AA)
     # if(rpred[0]==1 or lpred[0]==1):
@@ -96,7 +120,7 @@ while(True):
     cv2.putText(frame,'Score:'+str(score),(100,height-20), font, 1,(255,255,255),1,cv2.LINE_AA)
     if(score < 15 and sound_played):
         sound_played = False
-    if(score>15):
+    if(score>=15):
         #person is feeling sleepy so we beep the alarm
         cv2.imwrite(os.path.join(path,'image.jpg'),frame)
         try:
@@ -117,7 +141,7 @@ while(True):
         if (not asleep_prev_loop):
             asleep_prev_loop = True
             client.messages.create(to='+17347907349', from_='+18782177085', body='Your son Frankie has fallen asleep.\n\nSafe landing the vehicle.')
-        cv2.putText(frame,'INITIATING SAFE LAND NOW. TEXTING YOUR MOM',(100,height-100), font, 1,(0,0,255),1,cv2.LINE_AA)
+        cv2.putText(frame,'INITIATING SAFE LAND NOW. \nTEXTING YOUR MOM',(0,height-100), font, 1,(0,0,255),1,cv2.LINE_AA)
     if (score < 15 and asleep_prev_loop):
         asleep_prev_loop = False
         #asleep_prev_loop = True
